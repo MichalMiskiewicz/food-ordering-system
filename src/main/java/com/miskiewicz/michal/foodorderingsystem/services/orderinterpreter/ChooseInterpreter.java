@@ -3,8 +3,6 @@ package com.miskiewicz.michal.foodorderingsystem.services.orderinterpreter;
 import com.miskiewicz.michal.foodorderingsystem.services.orderinterpreter.command.Command;
 import com.miskiewicz.michal.foodorderingsystem.services.orderinterpreter.command.DrinkCommand;
 import com.miskiewicz.michal.foodorderingsystem.services.orderinterpreter.command.LunchCommand;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -15,11 +13,11 @@ public class ChooseInterpreter {
 
     private final ConcurrentHashMap<String, List<Command>> orders;
 
-    public ChooseInterpreter(DrinkCommand drinkCommand, LunchCommand lunchCommand){
+    public ChooseInterpreter(DrinkCommand drinkCommand, LunchCommand lunchCommand) {
         orders = new ConcurrentHashMap<>() {{
-                put("1", List.of(drinkCommand));
-                put("2", List.of(lunchCommand));
-                put("3", List.of(drinkCommand, lunchCommand));
+            put("1", List.of(drinkCommand));
+            put("2", List.of(lunchCommand));
+            put("3", List.of(drinkCommand, lunchCommand));
         }};
     }
 

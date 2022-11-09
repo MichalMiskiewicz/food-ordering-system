@@ -1,27 +1,27 @@
 package com.miskiewicz.michal.foodorderingsystem.services;
 
+import com.miskiewicz.michal.foodorderingsystem.entities.OrderEntity;
+import com.miskiewicz.michal.foodorderingsystem.repositories.OrderRepository;
 import com.miskiewicz.michal.foodorderingsystem.requests.OrderingRequest;
 import com.miskiewicz.michal.foodorderingsystem.services.orderinterpreter.ChooseInterpreter;
 import com.miskiewicz.michal.foodorderingsystem.services.orderinterpreter.command.Command;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Scanner;
 
 @Service
-@NoArgsConstructor
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class FoodOrderingServiceImpl implements FoodOrderingService {
 
-    @Autowired
-    private Scanner scanner;
-    @Autowired
-    private ChooseInterpreter chooseInterpreter;
+    private final Scanner scanner;
+    private final ChooseInterpreter chooseInterpreter;
+    private final OrderRepository orderRepository;
+    private final ModelMapper mapper;
 
     @Override
     public void placeOrder() {
@@ -37,8 +37,12 @@ public class FoodOrderingServiceImpl implements FoodOrderingService {
 
             try {
                 commands.forEach(command -> command.execute(orderingRequest));
+                OrderEntity map = mapper.map(orderingRequest, OrderEntity.class);
+                orderRepository.save(map);
+
             } catch (IllegalArgumentException iae) {
                 System.out.println(iae.getMessage());
+            } finally {
                 System.out.println(showAppMenu());
             }
         }

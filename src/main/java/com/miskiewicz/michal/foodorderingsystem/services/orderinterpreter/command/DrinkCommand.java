@@ -9,20 +9,17 @@ import lombok.Value;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
-public class DrinkCommand implements Command{
+public class DrinkCommand implements Command {
 
     private final Scanner scanner;
     private final DrinkRepository drinkRepository;
-
     private final ModelMapper mapper;
 
     @Override
@@ -40,7 +37,8 @@ public class DrinkCommand implements Command{
         drink.setAddition(additions);
 
         orderingRequest.setDrink(drink);
-        System.out.println(orderingRequest.getDrink().toString());
+        orderingRequest.setCost(orderingRequest.getCost() + drink.getPrice());
+
     }
 
     private Drink getDrink(List<DrinkPair> availableDrinks) {
@@ -48,7 +46,7 @@ public class DrinkCommand implements Command{
         Optional<DrinkPair> optionalDrink = availableDrinks.stream()
                 .filter(drink -> drink.getIndex().equals(chosenDrink))
                 .findFirst();
-        if (optionalDrink.isEmpty()){
+        if (optionalDrink.isEmpty()) {
             throw new IllegalArgumentException("There is no drink of that index!");
         }
         return mapper.map(optionalDrink.get().getDrinkEntity(), Drink.class);
@@ -59,7 +57,7 @@ public class DrinkCommand implements Command{
         Optional<AdditionsPair> optionalAddition = availableAdditions.stream()
                 .filter(additions -> additions.getIndex().equals(chosenAdditions))
                 .findFirst();
-        if (optionalAddition.isEmpty()){
+        if (optionalAddition.isEmpty()) {
             throw new IllegalArgumentException("There is no addition of that index!");
         }
         return optionalAddition.get().getAddition();
@@ -90,7 +88,7 @@ public class DrinkCommand implements Command{
 
         @Override
         public String toString() {
-            return "(" + index + ") " + drinkEntity.getName();
+            return "(" + index + ") " + drinkEntity.getName() + " " + drinkEntity.getPrice() + " zł";
         }
     }
 

@@ -2,13 +2,20 @@ package com.miskiewicz.michal.foodorderingsystem.requests;
 
 import lombok.Data;
 
-import java.util.List;
+import java.util.UUID;
 
 @Data
 public class Drink {
+    UUID id;
     private String name;
     private Double price;
     private Additions addition;
+
+    @Override
+    public String toString() {
+        return name + " with " + addition.toString();
+    }
+
     public enum Additions {
         NONE {
             @Override
@@ -22,22 +29,17 @@ public class Drink {
                 return "ice cubes";
             }
         },
-        LEMON{
+        LEMON {
             @Override
             public String toString() {
                 return "lemon";
             }
         },
-        ALL{
+        ALL {
             @Override
             public String toString() {
                 return "ice cubes and lemon";
             }
         }
-    }
-
-    @Override
-    public String toString() {
-        return name + " with " + addition.toString();
     }
 }

@@ -10,7 +10,6 @@ import javax.persistence.Table;
 @Getter
 @Setter
 @Entity
-@Builder
 @Table(name = "drinks")
 public class DrinkEntity extends VictualsEntity {
     @Override

@@ -1,5 +1,6 @@
 package com.miskiewicz.michal.foodorderingsystem.entities;
 
+import com.miskiewicz.michal.foodorderingsystem.requests.Drink;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenericGenerator;
@@ -13,6 +14,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Builder
+@ToString
 @Entity
 @Table(name = "orders")
 public class OrderEntity {
@@ -24,9 +26,8 @@ public class OrderEntity {
     @ColumnDefault("random_uuid()")
     private UUID id;
 
-    private Boolean iceCubes = false;
-
-    private Boolean lemon = false;
+    @Enumerated(EnumType.STRING)
+    private Drink.Additions additions;
 
     private Double cost = 0.0;
 
