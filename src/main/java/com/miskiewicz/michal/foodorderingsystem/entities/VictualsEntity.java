@@ -12,6 +12,7 @@ import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @MappedSuperclass
@@ -29,6 +30,6 @@ public class VictualsEntity {
     private UUID id;
 
     private String name;
-    private Double price;
+    private BigDecimal price;
 
 }

@@ -33,12 +33,11 @@ public class DrinkCommand implements Command {
         List<AdditionsPair> availableAdditions = getAvailableAdditions();
         availableAdditions.forEach(System.out::println);
 
-        Drink.Additions additions = getDrinkAdditions(availableAdditions);
-        drink.setAddition(additions);
+        Drink.Additions addition = getDrinkAdditions(availableAdditions);
+        drink.setAddition(addition);
 
         orderingRequest.setDrink(drink);
-        orderingRequest.setCost(orderingRequest.getCost() + drink.getPrice());
-
+        orderingRequest.setCost(orderingRequest.getCost().add(drink.getPrice()));
     }
 
     private Drink getDrink(List<DrinkPair> availableDrinks) {

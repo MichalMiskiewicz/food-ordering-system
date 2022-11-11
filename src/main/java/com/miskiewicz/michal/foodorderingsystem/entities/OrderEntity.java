@@ -7,6 +7,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -29,7 +30,7 @@ public class OrderEntity {
     @Enumerated(EnumType.STRING)
     private Drink.Additions additions;
 
-    private Double cost = 0.0;
+    private BigDecimal cost;
 
     @ManyToOne
     private MainCourseEntity mainCourse;

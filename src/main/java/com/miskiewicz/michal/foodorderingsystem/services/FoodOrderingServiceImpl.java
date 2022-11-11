@@ -37,9 +37,10 @@ public class FoodOrderingServiceImpl implements FoodOrderingService {
 
             try {
                 commands.forEach(command -> command.execute(orderingRequest));
-                OrderEntity map = mapper.map(orderingRequest, OrderEntity.class);
-                orderRepository.save(map);
-
+                if(orderingRequest.getDrink() != null || orderingRequest.getLunch() != null){
+                    OrderEntity completedOrder = mapper.map(orderingRequest, OrderEntity.class);
+                    orderRepository.save(completedOrder);
+                }
             } catch (IllegalArgumentException iae) {
                 System.out.println(iae.getMessage());
             } finally {

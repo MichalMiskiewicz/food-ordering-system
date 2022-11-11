@@ -3,6 +3,7 @@ package com.miskiewicz.michal.foodorderingsystem.services.orderinterpreter;
 import com.miskiewicz.michal.foodorderingsystem.services.orderinterpreter.command.Command;
 import com.miskiewicz.michal.foodorderingsystem.services.orderinterpreter.command.DrinkCommand;
 import com.miskiewicz.michal.foodorderingsystem.services.orderinterpreter.command.LunchCommand;
+import com.miskiewicz.michal.foodorderingsystem.services.orderinterpreter.command.NotFoundCommand;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -22,6 +23,6 @@ public class ChooseInterpreter {
     }
 
     public List<Command> interpreter(String chosen) {
-        return orders.get(chosen);
+        return orders.getOrDefault(chosen, List.of(new NotFoundCommand()));
     }
 }

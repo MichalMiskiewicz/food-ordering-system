@@ -2,13 +2,14 @@ package com.miskiewicz.michal.foodorderingsystem.requests;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
 public class Drink {
     UUID id;
     private String name;
-    private Double price;
+    private BigDecimal price;
     private Additions addition;
 
     @Override
