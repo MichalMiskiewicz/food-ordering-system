@@ -15,4 +15,9 @@ public class MainCourseEntity extends VictualsEntity {
 
     @ManyToOne
     private CuisineEntity cuisine;
+
+    @Override
+    public String toString() {
+        return this.getName() + " " + this.getPrice() + " zł";
+    }
 }

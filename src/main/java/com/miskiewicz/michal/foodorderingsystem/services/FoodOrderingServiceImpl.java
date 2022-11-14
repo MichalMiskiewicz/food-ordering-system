@@ -25,27 +25,19 @@ public class FoodOrderingServiceImpl implements FoodOrderingService {
 
     @Override
     public void placeOrder() {
-        OrderingRequest orderingRequest = new OrderingRequest();
         while (scanner.hasNext()) {
+            OrderingRequest orderingRequest = new OrderingRequest();
             String chosen = scanner.nextLine();
-
             if (chosen.equals("5")) {
                 break;
             }
-
             List<Command> commands = chooseInterpreter.interpreter(chosen);
-
-            try {
-                commands.forEach(command -> command.execute(orderingRequest));
-                if(orderingRequest.getDrink() != null || orderingRequest.getLunch() != null){
-                    OrderEntity completedOrder = mapper.map(orderingRequest, OrderEntity.class);
-                    orderRepository.save(completedOrder);
-                }
-            } catch (IllegalArgumentException iae) {
-                System.out.println(iae.getMessage());
-            } finally {
-                System.out.println(showAppMenu());
+            commands.forEach(command -> command.execute(orderingRequest));
+            if(orderingRequest.getDrink() != null || orderingRequest.getLunch() != null){
+                OrderEntity completedOrder = mapper.map(orderingRequest, OrderEntity.class);
+                orderRepository.save(completedOrder);
             }
+            System.out.println(showAppMenu());
         }
     }
 

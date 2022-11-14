@@ -7,7 +7,7 @@ import java.util.UUID;
 
 @Data
 public class Drink {
-    UUID id;
+    private UUID id;
     private String name;
     private BigDecimal price;
     private Additions addition;

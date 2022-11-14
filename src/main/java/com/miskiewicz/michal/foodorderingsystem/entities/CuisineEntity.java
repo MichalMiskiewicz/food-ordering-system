@@ -28,4 +28,9 @@ public class CuisineEntity {
     private UUID id;
 
     private String name;
+
+    @Override
+    public String toString() {
+        return this.getName();
+    }
 }

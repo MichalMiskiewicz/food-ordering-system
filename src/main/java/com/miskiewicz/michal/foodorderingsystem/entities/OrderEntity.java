@@ -10,11 +10,9 @@ import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-@AllArgsConstructor
-@NoArgsConstructor
+
 @Getter
 @Setter
-@Builder
 @ToString
 @Entity
 @Table(name = "orders")
@@ -27,8 +25,12 @@ public class OrderEntity {
     @ColumnDefault("random_uuid()")
     private UUID id;
 
-    @Enumerated(EnumType.STRING)
-    private Drink.Additions additions;
+   /* @Enumerated(EnumType.STRING)
+    private Additions additions;*/
+
+    private Boolean iceCubes = false;
+
+    private Boolean lemon = false;
 
     private BigDecimal cost;
 
@@ -40,4 +42,31 @@ public class OrderEntity {
 
     @ManyToOne
     private DrinkEntity drink;
+
+    /*public enum Additions {
+        NONE {
+            @Override
+            public String toString() {
+                return "nothing";
+            }
+        },
+        ICE_CUBES {
+            @Override
+            public String toString() {
+                return "ice cubes";
+            }
+        },
+        LEMON {
+            @Override
+            public String toString() {
+                return "lemon";
+            }
+        },
+        ALL {
+            @Override
+            public String toString() {
+                return "ice cubes and lemon";
+            }
+        }
+    }*/
 }

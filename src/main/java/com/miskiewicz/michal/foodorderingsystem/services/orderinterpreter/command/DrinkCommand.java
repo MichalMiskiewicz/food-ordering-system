@@ -24,41 +24,37 @@ public class DrinkCommand implements Command {
 
     @Override
     public void execute(OrderingRequest orderingRequest) {
-        List<DrinkPair> availableDrinks = getAvailableDrinks();
-        availableDrinks.forEach(System.out::println);
-
-        Drink drink = getDrink(availableDrinks);
-
-        System.out.println("What about additions?:");
-        List<AdditionsPair> availableAdditions = getAvailableAdditions();
-        availableAdditions.forEach(System.out::println);
-
-        Drink.Additions addition = getDrinkAdditions(availableAdditions);
-        drink.setAddition(addition);
-
-        orderingRequest.setDrink(drink);
-        orderingRequest.setCost(orderingRequest.getCost().add(drink.getPrice()));
+        try {
+            List<DrinkPair> availableDrinks = getAvailableDrinks();
+            availableDrinks.forEach(System.out::println);
+            String chosenDrink = scanner.nextLine();
+            Drink drink = getDrink(availableDrinks, chosenDrink);
+            System.out.println("What about additions?:");
+            List<AdditionsPair> availableAdditions = getAvailableAdditions();
+            availableAdditions.forEach(System.out::println);
+            String chosenAdditions = scanner.nextLine();
+            Drink.Additions addition = getDrinkAdditions(availableAdditions, chosenAdditions);
+            drink.setAddition(addition);
+            orderingRequest.setDrink(drink);
+            orderingRequest.setCost(orderingRequest.getCost().add(drink.getPrice()));
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
-    private Drink getDrink(List<DrinkPair> availableDrinks) {
-        String chosenDrink = scanner.nextLine();
-        Optional<DrinkPair> optionalDrink = availableDrinks.stream()
+    private Drink getDrink(List<DrinkPair> availableDrinks, String chosenDrink) {
+        Optional<DrinkPair> optionalDrink = Optional.ofNullable(availableDrinks.stream()
                 .filter(drink -> drink.getIndex().equals(chosenDrink))
-                .findFirst();
-        if (optionalDrink.isEmpty()) {
-            throw new IllegalArgumentException("There is no drink of that index!");
-        }
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("There is no drink of that index!")));
         return mapper.map(optionalDrink.get().getDrinkEntity(), Drink.class);
     }
 
-    private Drink.Additions getDrinkAdditions(List<AdditionsPair> availableAdditions) {
-        String chosenAdditions = scanner.nextLine();
-        Optional<AdditionsPair> optionalAddition = availableAdditions.stream()
+    private Drink.Additions getDrinkAdditions(List<AdditionsPair> availableAdditions, String chosenAdditions) {
+        Optional<AdditionsPair> optionalAddition = Optional.ofNullable(availableAdditions.stream()
                 .filter(additions -> additions.getIndex().equals(chosenAdditions))
-                .findFirst();
-        if (optionalAddition.isEmpty()) {
-            throw new IllegalArgumentException("There is no addition of that index!");
-        }
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("There is no addition of that index!")));
         return optionalAddition.get().getAddition();
     }
 
