@@ -11,12 +11,10 @@ import com.miskiewicz.michal.foodorderingsystem.requests.Lunch;
 import com.miskiewicz.michal.foodorderingsystem.requests.MainCourse;
 import com.miskiewicz.michal.foodorderingsystem.requests.OrderingRequest;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Scanner;
 import java.util.stream.IntStream;
 
@@ -26,59 +24,52 @@ public class LunchCommand implements Command {
 
     private final Scanner scanner;
     private final MainCourseRepository mainCourseRepository;
-    private final CuisineRepository cuisineRepository;
     private final DessertRepository dessertRepository;
+    private final CuisineRepository cuisineRepository;
     private final ModelMapper mapper;
 
     @Override
     public void execute(OrderingRequest orderingRequest) {
-        try {
-            Lunch lunch = new Lunch();
-            List<CuisinePair> availableCuisines = getAvailableCuisines();
-            availableCuisines.forEach(System.out::println);
-            String chosenCuisine = scanner.nextLine();
-            System.out.println("Choose main course:");
-            List<MainCoursePair> availableMainCourses =
-                    getAvailableMainCourses(availableCuisines.get(Integer.parseInt(chosenCuisine)).getCuisine().getName());
-            availableMainCourses.forEach(System.out::println);
-            String chosenMainCourse = scanner.nextLine();
-            MainCourse mainCourse = getMainCourse(availableMainCourses, chosenMainCourse);
-            lunch.setMainCourse(mainCourse);
-            System.out.println("Choose dessert:");
-            List<DessertPair> availableDesserts =
-                    getAvailableDesserts(availableCuisines.get(Integer.parseInt(chosenCuisine)).getCuisine().getName());
-            availableDesserts.forEach(System.out::println);
-            String chosenDessert = scanner.nextLine();
-            Dessert dessert = getDessert(availableDesserts, chosenDessert);
-            lunch.setDessert(dessert);
-            orderingRequest.setLunch(lunch);
-            orderingRequest.setCost(orderingRequest.getCost().add(mainCourse.getPrice()).add(dessert.getPrice()));
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
+        Lunch lunch = new Lunch();
+        List<CuisinePair> availableCuisines = getAvailableCuisines();
+        availableCuisines.forEach(System.out::println);
+        String chosenCuisine = scanner.nextLine();
+        if (Integer.parseInt(chosenCuisine) >= availableCuisines.size()) {
+            throw new IllegalArgumentException("There is no cuisine of that index!");
         }
+        System.out.println("Choose main course:");
+        List<MainCoursePair> availableMainCourses =
+                getAvailableMainCourses(availableCuisines.get(Integer.parseInt(chosenCuisine)).cuisine().getName());
+        availableMainCourses.forEach(System.out::println);
+        String chosenMainCourse = scanner.nextLine();
+        MainCourse mainCourse = getMainCourse(availableMainCourses, chosenMainCourse);
+        lunch.setMainCourse(mainCourse);
+        System.out.println("Choose dessert:");
+        List<DessertPair> availableDesserts =
+                getAvailableDesserts(availableCuisines.get(Integer.parseInt(chosenCuisine)).cuisine().getName());
+        availableDesserts.forEach(System.out::println);
+        String chosenDessert = scanner.nextLine();
+        Dessert dessert = getDessert(availableDesserts, chosenDessert);
+        lunch.setDessert(dessert);
+        orderingRequest.setLunch(lunch);
+        orderingRequest.addToFinalCost(dessert.getPrice());
+        orderingRequest.addToFinalCost(mainCourse.getPrice());
     }
 
-    private MainCourse getMainCourse(List<MainCoursePair> availableMainCourses, String chosenMainCourse) {
-        Optional<MainCoursePair> optionalMainCourse = Optional.ofNullable(availableMainCourses.stream()
-                .filter(mainCourse -> mainCourse.getIndex().equals(chosenMainCourse))
+    private MainCourse getMainCourse(List<MainCoursePair> availableMainCourses, String chosenMainCourseIndex) {
+        MainCoursePair chosenMainCourse = availableMainCourses.stream()
+                .filter(mainCourse -> mainCourse.index().equals(chosenMainCourseIndex))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("There is no main course of that index!")));
-        return mapper.map(optionalMainCourse.get().getMainCourse(), MainCourse.class);
+                .orElseThrow(() -> new IllegalArgumentException("There is no main course of that index!"));
+        return mapper.map(chosenMainCourse.mainCourse(), MainCourse.class);
     }
 
-    private Dessert getDessert(List<DessertPair> availableDesserts, String chosenDessert) {
-        Optional<DessertPair> optionalDessert = Optional.ofNullable(availableDesserts.stream()
-                .filter(dessert -> dessert.getIndex().equals(chosenDessert))
+    private Dessert getDessert(List<DessertPair> availableDesserts, String chosenDessertIndex) {
+        DessertPair chosenDessert = availableDesserts.stream()
+                .filter(dessert -> dessert.index().equals(chosenDessertIndex))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("There is no dessert of that index!")));
-        return mapper.map(optionalDessert.get().getDessert(), Dessert.class);
-    }
-
-    private List<DessertPair> getAvailableDesserts(String chosenCuisine) {
-        List<DessertEntity> desserts = dessertRepository.getDessertsByProvidedCuisine(chosenCuisine);
-        return IntStream.range(0, desserts.size())
-                .mapToObj(index -> DessertPair.of(String.valueOf(index), desserts.get(index)))
-                .toList();
+                .orElseThrow(() -> new IllegalArgumentException("There is no dessert of that index!"));
+        return mapper.map(chosenDessert.dessert(), Dessert.class);
     }
 
     private List<CuisinePair> getAvailableCuisines() {
@@ -95,11 +86,15 @@ public class LunchCommand implements Command {
                 .toList();
     }
 
-    @Value
-    public static class DessertPair {
-        String index;
-        DessertEntity dessert;
+    private List<DessertPair> getAvailableDesserts(String chosenCuisine) {
+        List<DessertEntity> desserts = dessertRepository.getDessertsByProvidedCuisine(chosenCuisine);
+        return IntStream.range(0, desserts.size())
+                .mapToObj(index -> DessertPair.of(String.valueOf(index), desserts.get(index)))
+                .toList();
+    }
 
+
+    public record DessertPair(String index, DessertEntity dessert) {
         static DessertPair of(String index, DessertEntity dessert) {
             return new DessertPair(index, dessert);
         }
@@ -110,11 +105,7 @@ public class LunchCommand implements Command {
         }
     }
 
-    @Value
-    public static class MainCoursePair {
-        String index;
-        MainCourseEntity mainCourse;
-
+    public record MainCoursePair(String index, MainCourseEntity mainCourse) {
         static MainCoursePair of(String index, MainCourseEntity mainCourse) {
             return new MainCoursePair(index, mainCourse);
         }
@@ -125,11 +116,7 @@ public class LunchCommand implements Command {
         }
     }
 
-    @Value
-    public static class CuisinePair {
-        String index;
-        CuisineEntity cuisine;
-
+    public record CuisinePair(String index, CuisineEntity cuisine) {
         static CuisinePair of(String index, CuisineEntity cuisine) {
             return new CuisinePair(index, cuisine);
         }

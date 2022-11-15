@@ -32,13 +32,19 @@ public class FoodOrderingServiceImpl implements FoodOrderingService {
                 break;
             }
             List<Command> commands = chooseInterpreter.interpreter(chosen);
-            commands.forEach(command -> command.execute(orderingRequest));
-            if(orderingRequest.getDrink() != null || orderingRequest.getLunch() != null){
-                OrderEntity completedOrder = mapper.map(orderingRequest, OrderEntity.class);
-                orderRepository.save(completedOrder);
+            try {
+                commands.forEach(command -> command.execute(orderingRequest));
+                saveOrder(orderingRequest);
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
             }
             System.out.println(showAppMenu());
         }
+    }
+
+    private void saveOrder(OrderingRequest orderingRequest) {
+        OrderEntity completedOrder = mapper.map(orderingRequest, OrderEntity.class);
+        orderRepository.save(completedOrder);
     }
 
     @Override

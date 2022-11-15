@@ -11,13 +11,8 @@ import javax.persistence.Table;
 @Setter
 @Entity
 @Table(name = "mainCourses")
-public class MainCourseEntity extends VictualsEntity {
+public class MainCourseEntity extends BasicOrderEntity {
 
     @ManyToOne
     private CuisineEntity cuisine;
-
-    @Override
-    public String toString() {
-        return this.getName() + " " + this.getPrice() + " zł";
-    }
 }

@@ -30,9 +30,9 @@ class ChooseInterpreterTest {
     @ParameterizedTest
     @DisplayName("Should check if returned list size is correct")
     @MethodSource("getCommandsList")
-    void shouldCheckIfReturnedListSizeIsCorrect(String arg, List<Command> commands) {
-        List<Command> chosenCommands = chooseInterpreter.interpreter(arg);
+    void shouldCheckIfReturnedListSizeIsCorrect(String input, List<Command> expected) {
+        List<Command> result = chooseInterpreter.interpreter(input);
 
-        assertThat(chosenCommands.size()).isEqualTo(commands.size());
+        assertThat(result.size()).isEqualTo(expected.size());
     }
 }

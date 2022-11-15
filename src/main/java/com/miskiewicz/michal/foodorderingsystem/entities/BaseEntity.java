@@ -12,7 +12,6 @@ import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
-import java.math.BigDecimal;
 import java.util.UUID;
 
 @MappedSuperclass
@@ -20,7 +19,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @Getter
 @Setter
-public class VictualsEntity {
+public class BaseEntity {
+
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
@@ -28,8 +28,4 @@ public class VictualsEntity {
     @Type(type = "uuid-char")
     @ColumnDefault("random_uuid()")
     private UUID id;
-
-    private String name;
-    private BigDecimal price;
-
 }

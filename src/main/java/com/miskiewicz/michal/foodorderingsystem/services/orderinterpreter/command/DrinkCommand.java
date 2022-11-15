@@ -5,12 +5,10 @@ import com.miskiewicz.michal.foodorderingsystem.repositories.DrinkRepository;
 import com.miskiewicz.michal.foodorderingsystem.requests.Drink;
 import com.miskiewicz.michal.foodorderingsystem.requests.OrderingRequest;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Scanner;
 import java.util.stream.IntStream;
 
@@ -24,38 +22,34 @@ public class DrinkCommand implements Command {
 
     @Override
     public void execute(OrderingRequest orderingRequest) {
-        try {
-            List<DrinkPair> availableDrinks = getAvailableDrinks();
-            availableDrinks.forEach(System.out::println);
-            String chosenDrink = scanner.nextLine();
-            Drink drink = getDrink(availableDrinks, chosenDrink);
-            System.out.println("What about additions?:");
-            List<AdditionsPair> availableAdditions = getAvailableAdditions();
-            availableAdditions.forEach(System.out::println);
-            String chosenAdditions = scanner.nextLine();
-            Drink.Additions addition = getDrinkAdditions(availableAdditions, chosenAdditions);
-            drink.setAddition(addition);
-            orderingRequest.setDrink(drink);
-            orderingRequest.setCost(orderingRequest.getCost().add(drink.getPrice()));
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        List<DrinkPair> availableDrinks = getAvailableDrinks();
+        availableDrinks.forEach(System.out::println);
+        String chosenDrink = scanner.nextLine();
+        Drink drink = getDrink(availableDrinks, chosenDrink);
+        System.out.println("What about additions?:");
+        List<AdditionsPair> availableAdditions = getAvailableAdditions();
+        availableAdditions.forEach(System.out::println);
+        String chosenAdditions = scanner.nextLine();
+        Drink.Additions addition = getDrinkAdditions(availableAdditions, chosenAdditions);
+        drink.setAddition(addition);
+        orderingRequest.setDrink(drink);
+        orderingRequest.addToFinalCost(drink.getPrice());
     }
 
-    private Drink getDrink(List<DrinkPair> availableDrinks, String chosenDrink) {
-        Optional<DrinkPair> optionalDrink = Optional.ofNullable(availableDrinks.stream()
-                .filter(drink -> drink.getIndex().equals(chosenDrink))
+    private Drink getDrink(List<DrinkPair> availableDrinks, String chosenDrinkIndex) {
+        DrinkPair chosenDrink = availableDrinks.stream()
+                .filter(drink -> drink.index().equals(chosenDrinkIndex))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("There is no drink of that index!")));
-        return mapper.map(optionalDrink.get().getDrinkEntity(), Drink.class);
+                .orElseThrow(() -> new IllegalArgumentException("There is no drink of that index!"));
+        return mapper.map(chosenDrink.drinkEntity(), Drink.class);
     }
 
-    private Drink.Additions getDrinkAdditions(List<AdditionsPair> availableAdditions, String chosenAdditions) {
-        Optional<AdditionsPair> optionalAddition = Optional.ofNullable(availableAdditions.stream()
-                .filter(additions -> additions.getIndex().equals(chosenAdditions))
+    private Drink.Additions getDrinkAdditions(List<AdditionsPair> availableAdditions, String chosenAdditionIndex) {
+        AdditionsPair chosenAddition = availableAdditions.stream()
+                .filter(additions -> additions.index().equals(chosenAdditionIndex))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("There is no addition of that index!")));
-        return optionalAddition.get().getAddition();
+                .orElseThrow(() -> new IllegalArgumentException("There is no addition of that index!"));
+        return chosenAddition.addition();
     }
 
     private List<DrinkPair> getAvailableDrinks() {
@@ -72,11 +66,8 @@ public class DrinkCommand implements Command {
                 .toList();
     }
 
-    @Value
-    public static class DrinkPair {
-        String index;
-        DrinkEntity drinkEntity;
 
+    public record DrinkPair(String index, DrinkEntity drinkEntity) {
         static DrinkPair of(String index, DrinkEntity name) {
             return new DrinkPair(index, name);
         }
@@ -87,11 +78,7 @@ public class DrinkCommand implements Command {
         }
     }
 
-    @Value
-    public static class AdditionsPair {
-        String index;
-        Drink.Additions addition;
-
+    public record AdditionsPair(String index, Drink.Additions addition) {
         static AdditionsPair of(String index, Drink.Additions addition) {
             return new AdditionsPair(index, addition);
         }

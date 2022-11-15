@@ -5,8 +5,6 @@ import com.miskiewicz.michal.foodorderingsystem.entities.DrinkEntity;
 import com.miskiewicz.michal.foodorderingsystem.entities.MainCourseEntity;
 import com.miskiewicz.michal.foodorderingsystem.entities.OrderEntity;
 import com.miskiewicz.michal.foodorderingsystem.requests.*;
-import org.hibernate.criterion.Order;
-import org.jboss.jandex.Main;
 import org.modelmapper.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
@@ -16,49 +14,43 @@ import static com.miskiewicz.michal.foodorderingsystem.requests.Drink.Additions.
 @Component
 public class Mapper {
 
-    Converter<Drink, DrinkEntity> convertDrinkToDrinkEntity = new AbstractConverter<>() {
+    private final Converter<Drink, DrinkEntity> convertDrinkToDrinkEntity = new AbstractConverter<>() {
         protected DrinkEntity convert(Drink source) {
             DrinkEntity drink = new DrinkEntity();
-            if(source != null){
-                drink.setPrice(source.getPrice());
-                drink.setName(source.getName());
-                drink.setId(source.getId());
-            }
+            drink.setPrice(source.getPrice());
+            drink.setName(source.getName());
+            drink.setId(source.getId());
             return drink;
         }
     };
 
-    Converter<Lunch, MainCourseEntity> convertLunchToMainCourseEntity = new AbstractConverter<>() {
+    private final Converter<Lunch, MainCourseEntity> convertLunchToMainCourseEntity = new AbstractConverter<>() {
         protected MainCourseEntity convert(Lunch source) {
             MainCourseEntity mainCourse = new MainCourseEntity();
-            if(source != null){
-                mainCourse.setPrice(source.getMainCourse().getPrice());
-                mainCourse.setName(source.getMainCourse().getName());
-                mainCourse.setId(source.getMainCourse().getId());
-            }
+            mainCourse.setPrice(source.getMainCourse().getPrice());
+            mainCourse.setName(source.getMainCourse().getName());
+            mainCourse.setId(source.getMainCourse().getId());
             return mainCourse;
         }
     };
 
-    Converter<Lunch, DessertEntity> convertLunchToDessertEntity = new AbstractConverter<>() {
+    private final Converter<Lunch, DessertEntity> convertLunchToDessertEntity = new AbstractConverter<>() {
         protected DessertEntity convert(Lunch source) {
             DessertEntity dessert = new DessertEntity();
-            if(source != null){
-                dessert.setPrice(source.getDessert().getPrice());
-                dessert.setName(source.getDessert().getName());
-                dessert.setId(source.getDessert().getId());
-            }
+            dessert.setPrice(source.getDessert().getPrice());
+            dessert.setName(source.getDessert().getName());
+            dessert.setId(source.getDessert().getId());
             return dessert;
         }
     };
 
-    Converter<Drink, Boolean> convertDrinkAdditionsToLemonAddition = new AbstractConverter<>() {
+    private final Converter<Drink, Boolean> convertDrinkAdditionsToLemonAddition = new AbstractConverter<>() {
         protected Boolean convert(Drink source) {
             return source.getAddition() == ALL || source.getAddition() == LEMON;
         }
     };
 
-    Converter<Drink, Boolean> convertDrinkAdditionsToIceCubesAddition = new AbstractConverter<>() {
+    private final Converter<Drink, Boolean> convertDrinkAdditionsToIceCubesAddition = new AbstractConverter<>() {
         protected Boolean convert(Drink source) {
             return source.getAddition() == ALL || source.getAddition() == ICE_CUBES;
         }
@@ -77,7 +69,6 @@ public class Mapper {
             }
 
         });
-
         modelMapper.addMappings(new PropertyMap<MainCourseEntity, MainCourse>() {
             @Override
             protected void configure() {
@@ -87,7 +78,6 @@ public class Mapper {
             }
 
         });
-
         modelMapper.addMappings(new PropertyMap<DessertEntity, Dessert>() {
             @Override
             protected void configure() {
@@ -97,19 +87,17 @@ public class Mapper {
             }
 
         });
-
         modelMapper.addMappings(new PropertyMap<OrderingRequest, OrderEntity>() {
             @Override
             protected void configure() {
                 map().setCost(source.getCost());
             }
         });
-
         modelMapper.typeMap(OrderingRequest.class, OrderEntity.class)
                 .addMappings(mapper ->
                 {
                     mapper.using(convertLunchToMainCourseEntity)
-                                    .map(OrderingRequest::getLunch, OrderEntity::setMainCourse);
+                            .map(OrderingRequest::getLunch, OrderEntity::setMainCourse);
                     mapper.using(convertLunchToDessertEntity)
                             .map(OrderingRequest::getLunch, OrderEntity::setDessert);
                     mapper.using(convertDrinkToDrinkEntity)
@@ -119,8 +107,6 @@ public class Mapper {
                     mapper.using(convertDrinkAdditionsToLemonAddition)
                             .map(OrderingRequest::getDrink, OrderEntity::setLemon);
                 });
-
-
         return modelMapper;
     }
 }
