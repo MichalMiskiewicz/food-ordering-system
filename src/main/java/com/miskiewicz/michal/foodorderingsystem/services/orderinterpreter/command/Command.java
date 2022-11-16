@@ -5,4 +5,5 @@ import com.miskiewicz.michal.foodorderingsystem.requests.OrderingRequest;
 public interface Command {
 
     void execute(OrderingRequest orderingRequest);
+
 }

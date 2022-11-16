@@ -1,5 +1,6 @@
 package com.miskiewicz.michal.foodorderingsystem.services.orderinterpreter.command;
 
+import com.miskiewicz.michal.foodorderingsystem.inout.InputOutput;
 import com.miskiewicz.michal.foodorderingsystem.entities.DrinkEntity;
 import com.miskiewicz.michal.foodorderingsystem.repositories.DrinkRepository;
 import com.miskiewicz.michal.foodorderingsystem.requests.Drink;
@@ -9,31 +10,29 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Scanner;
 import java.util.stream.IntStream;
 
 @Component
 @RequiredArgsConstructor
 public class DrinkCommand implements Command {
-
-    private final Scanner scanner;
     private final DrinkRepository drinkRepository;
     private final ModelMapper mapper;
+    private final InputOutput io;
 
     @Override
     public void execute(OrderingRequest orderingRequest) {
         List<DrinkPair> availableDrinks = getAvailableDrinks();
-        availableDrinks.forEach(System.out::println);
-        String chosenDrink = scanner.nextLine();
+        availableDrinks.forEach(drink -> io.write(drink.toString()));
+        String chosenDrink = io.read();
         Drink drink = getDrink(availableDrinks, chosenDrink);
-        System.out.println("What about additions?:");
+        io.write("What about additions?:");
         List<AdditionsPair> availableAdditions = getAvailableAdditions();
-        availableAdditions.forEach(System.out::println);
-        String chosenAdditions = scanner.nextLine();
+        availableAdditions.forEach(addition -> io.write(addition.toString()));
+        String chosenAdditions = io.read();
         Drink.Additions addition = getDrinkAdditions(availableAdditions, chosenAdditions);
         drink.setAddition(addition);
         orderingRequest.setDrink(drink);
-        orderingRequest.addToFinalCost(drink.getPrice());
+        orderingRequest.addToFinalCost(drink);
     }
 
     private Drink getDrink(List<DrinkPair> availableDrinks, String chosenDrinkIndex) {

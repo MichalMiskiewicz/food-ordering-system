@@ -1,5 +1,6 @@
 package com.miskiewicz.michal.foodorderingsystem.services;
 
+import com.miskiewicz.michal.foodorderingsystem.inout.InputOutput;
 import com.miskiewicz.michal.foodorderingsystem.entities.OrderEntity;
 import com.miskiewicz.michal.foodorderingsystem.repositories.OrderRepository;
 import com.miskiewicz.michal.foodorderingsystem.requests.OrderingRequest;
@@ -11,23 +12,21 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Scanner;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class FoodOrderingServiceImpl implements FoodOrderingService {
-
-    private final Scanner scanner;
     private final ChooseInterpreter chooseInterpreter;
     private final OrderRepository orderRepository;
     private final ModelMapper mapper;
+    private final InputOutput io;
 
     @Override
     public void placeOrder() {
-        while (scanner.hasNext()) {
+        while (io.hasNext()) {
             OrderingRequest orderingRequest = new OrderingRequest();
-            String chosen = scanner.nextLine();
+            String chosen = io.read();
             if (chosen.equals("5")) {
                 break;
             }
@@ -36,9 +35,9 @@ public class FoodOrderingServiceImpl implements FoodOrderingService {
                 commands.forEach(command -> command.execute(orderingRequest));
                 saveOrder(orderingRequest);
             } catch (IllegalArgumentException e) {
-                System.out.println(e.getMessage());
+                io.write(e.getMessage());
             }
-            System.out.println(showAppMenu());
+            showAppMenu();
         }
     }
 
@@ -48,7 +47,7 @@ public class FoodOrderingServiceImpl implements FoodOrderingService {
     }
 
     @Override
-    public String showAppMenu() {
-        return "What do you want to order? [(1) drink / (2) lunch / (3) both] | [(5) exit]:";
+    public void showAppMenu() {
+        io.write("What do you want to order? [(1) drink / (2) lunch / (3) both] | [(5) exit]:");
     }
 }

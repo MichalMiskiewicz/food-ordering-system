@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
-public class Dessert {
+public class Dessert implements HavingPriceProduct {
     private UUID id;
     private String name;
     private BigDecimal price;
