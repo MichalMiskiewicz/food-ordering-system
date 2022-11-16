@@ -40,9 +40,6 @@ public class LunchCommand extends AbstractCommand implements Command {
         io.write("What cuisine do you prefer?:");
         write(availableCuisines);
         String chosenCuisine = io.read();
-        if (Integer.parseInt(chosenCuisine) >= availableCuisines.size()) {
-            throw new IllegalArgumentException("There is no cuisine of that index!");
-        }
         io.write("Choose main course:");
         List<IndexedDishes<MainCourseEntity>> availableMainCourses =
                 getAvailableMainCourses(getNameOfChosenCuisine(availableCuisines, chosenCuisine));
@@ -57,7 +54,6 @@ public class LunchCommand extends AbstractCommand implements Command {
         availableDesserts.forEach(dessert -> io.write(dessert.toString()));
         String chosenDessert = io.read();
         DessertEntity dessertEntity = getChosen(availableDesserts, chosenDessert);
-
         Dessert mappedDessert = mapper.map(dessertEntity, Dessert.class);
         lunch.setDessert(mappedDessert);
         orderingRequest.setLunch(lunch);
@@ -66,61 +62,41 @@ public class LunchCommand extends AbstractCommand implements Command {
 
     private List<IndexedDishes<CuisineEntity>> getAvailableCuisines() {
         List<CuisineEntity> cuisines = cuisineRepository.findAll();
-        return IntStream.range(0, cuisines.size())
-                .mapToObj(index -> Tuple.of(String.valueOf(index), cuisines.get(index)))
+        return getIndexedDishes(cuisines);
+    }
+
+    private List<IndexedDishes<MainCourseEntity>> getAvailableMainCourses(String chosenCuisine) {
+        List<MainCourseEntity> mainCourses = mainCourseRepository.getMainCourseByProvidedCuisine(chosenCuisine);
+        return getIndexedDishes(mainCourses);
+    }
+
+    private List<IndexedDishes<DessertEntity>> getAvailableDesserts(String chosenCuisine) {
+        List<DessertEntity> desserts = dessertRepository.getDessertsByProvidedCuisine(chosenCuisine);
+        return getIndexedDishes(desserts);
+    }
+
+    private <T> List<IndexedDishes<T>> getIndexedDishes(List<T> elements) {
+        return IntStream.range(0, elements.size())
+                .mapToObj(index -> Tuple.of(String.valueOf(index), elements.get(index)))
                 .map(IndexedDishes::of)
                 .toList();
     }
+
     private <T> T getChosen(List<IndexedDishes<T>> courses, String chosen) {
         return courses.stream().filter(
                 it -> it.getIndex().equals(chosen)
         ).map(IndexedDishes::getValue)
                 .findFirst()
-                .orElseThrow();
+                .orElseThrow(() -> new IllegalArgumentException("There is no element of that index!"));
     }
 
     private String getNameOfChosenCuisine(List<IndexedDishes<CuisineEntity>> availableCuisines, String chosenCuisine) {
         return availableCuisines.stream().filter(
-                        it -> it.getIndex().equals(chosenCuisine)
+                it -> it.getIndex().equals(chosenCuisine)
                 ).map(IndexedDishes::getValue)
-                .map(CuisineEntity::getName).findFirst().orElse("");
-    }
-
-    private List<IndexedDishes<DessertEntity>> getAvailableDesserts(String chosenCuisine) {
-        List<DessertEntity> desserts = dessertRepository.getDessertsByProvidedCuisine(chosenCuisine);
-        return IntStream.range(0, desserts.size())
-                .mapToObj(index -> Tuple.of(String.valueOf(index), desserts.get(index)))
-                .map(IndexedDishes::of)
-                .toList();
-    }
-
-    private List<IndexedDishes<MainCourseEntity>> getAvailableMainCourses(String chosenCuisine) {
-        List<MainCourseEntity> mainCourses = mainCourseRepository.getMainCourseByProvidedCuisine(chosenCuisine);
-        return IntStream.range(0, mainCourses.size())
-                .mapToObj(index -> Tuple.of(String.valueOf(index), mainCourses.get(index)))
-                .map(IndexedDishes::of)
-                .toList();
-    }
-
-    public record DessertPair(String index, DessertEntity dessert) {
-
-        static DessertPair of(String index, DessertEntity dessert) {
-            return new DessertPair(index, dessert);
-        }
-
-        @Override
-        public String toString() {
-            return "(" + index + ") " + dessert.toString();
-        }
-    }
-
-    public record MainCoursePair(String index, MainCourseEntity mainCourse) {
-
-        static MainCoursePair of(String index, MainCourseEntity mainCourse) {
-            return new MainCoursePair(index, mainCourse);
-        }
-
-
+                .map(CuisineEntity::getName)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("There is no cuisine of that index!"));
     }
 
 }

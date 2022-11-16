@@ -36,7 +36,7 @@ class DrinkCommandTest {
         orderingRequest = new OrderingRequest();
         drinkEntity = new DrinkEntity();
         drink = new Drink();
-        drinkEntity.setPrice(BigDecimal.valueOf(4.5));
+        drinkEntity.setPrice(BigDecimal.valueOf(0.0));
         drink.setPrice(BigDecimal.valueOf(0.0));
     }
 

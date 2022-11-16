@@ -3,6 +3,7 @@ package com.miskiewicz.michal.foodorderingsystem.services.orderinterpreter.comma
 import com.miskiewicz.michal.foodorderingsystem.entities.CuisineEntity;
 import com.miskiewicz.michal.foodorderingsystem.entities.DessertEntity;
 import com.miskiewicz.michal.foodorderingsystem.entities.MainCourseEntity;
+import com.miskiewicz.michal.foodorderingsystem.inout.InputOutput;
 import com.miskiewicz.michal.foodorderingsystem.repositories.CuisineRepository;
 import com.miskiewicz.michal.foodorderingsystem.repositories.DessertRepository;
 import com.miskiewicz.michal.foodorderingsystem.repositories.MainCourseRepository;
@@ -10,15 +11,14 @@ import com.miskiewicz.michal.foodorderingsystem.requests.Dessert;
 import com.miskiewicz.michal.foodorderingsystem.requests.Lunch;
 import com.miskiewicz.michal.foodorderingsystem.requests.MainCourse;
 import com.miskiewicz.michal.foodorderingsystem.requests.OrderingRequest;
-import com.miskiewicz.michal.foodorderingsystem.inout.InputOutput;
+import io.vavr.Tuple;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
+import org.springframework.test.util.ReflectionTestUtils;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -34,41 +34,47 @@ class LunchCommandTest {
     private final CuisineRepository cuisineRepository = mock(CuisineRepository.class);
     private final InputOutput io = mock(InputOutput.class);
     private final LunchCommand lunchCommand = new LunchCommand(io, mainCourseRepository, dessertRepository, cuisineRepository, modelMapper);
+    private CuisineEntity cuisineEntity;
     private OrderingRequest orderingRequest;
     private DessertEntity dessertEntity;
     private MainCourseEntity mainCourseEntity;
-    private CuisineEntity cuisineEntity;
     private Dessert dessert;
     private MainCourse mainCourse;
+    private Lunch lunch;
 
     @BeforeEach
     void setUp() {
-        OrderingRequest orderingRequest = new OrderingRequest();
-        DessertEntity dessertEntity = new DessertEntity();
-        MainCourseEntity mainCourseEntity = new MainCourseEntity();
-        CuisineEntity cuisineEntity = new CuisineEntity();
-        Dessert dessert = new Dessert();
-        MainCourse mainCourse = new MainCourse();
+        orderingRequest = new OrderingRequest();
+        cuisineEntity = new CuisineEntity();
+        mainCourseEntity = new MainCourseEntity();
+        dessertEntity = new DessertEntity();
+        dessert = new Dessert();
+        mainCourse = new MainCourse();
+        lunch = new Lunch();
+        cuisineEntity.setName("");
+        dessertEntity.setName("entityName");
         dessertEntity.setPrice(BigDecimal.valueOf(4.5));
-        dessert.setPrice(BigDecimal.valueOf(0.0));
+        mainCourseEntity.setName("entityName");
         mainCourseEntity.setPrice(BigDecimal.valueOf(4.5));
+        dessert.setPrice(BigDecimal.valueOf(0.0));
         mainCourse.setPrice(BigDecimal.valueOf(0.0));
+        lunch.setMainCourse(mainCourse);
+        lunch.setDessert(dessert);
     }
 
     @Test
-    @DisplayName("Should check if returned object is not null and is an instance of Lunch class")
-    void shouldCheckIfReturnedObjectIsNotNullAndIsInstanceOfLunchClass() {
+    @DisplayName("Should check if collected lunch is equal to expected lunch object")
+    void shouldCheckIfCollectedLunchIsEqualToExpectedLunchObject() {
         given(io.read()).willReturn("0");
-        given(dessertRepository.getDessertsByProvidedCuisine(any())).willReturn(List.of(dessertEntity));
-        given(mainCourseRepository.getMainCourseByProvidedCuisine(any())).willReturn(List.of(mainCourseEntity));
         given(cuisineRepository.findAll()).willReturn(List.of(cuisineEntity));
+        given(mainCourseRepository.getMainCourseByProvidedCuisine(any())).willReturn(List.of(mainCourseEntity));
+        given(dessertRepository.getDessertsByProvidedCuisine("")).willReturn(List.of(dessertEntity));
         given(modelMapper.map(dessertEntity, Dessert.class)).willReturn(dessert);
         given(modelMapper.map(mainCourseEntity, MainCourse.class)).willReturn(mainCourse);
 
         lunchCommand.execute(orderingRequest);
 
-        assertThat(orderingRequest.getLunch()).isNotNull();
-        assertThat(orderingRequest.getLunch()).isInstanceOf(Lunch.class);
+        assertThat(orderingRequest.getLunch()).usingRecursiveComparison().isEqualTo(lunch);
     }
 
     @Test
@@ -88,45 +94,26 @@ class LunchCommandTest {
     @Test
     @DisplayName("Should throw exception when user choose main course that not exists")
     void shouldThrowExceptionWhenUserChooseMainCourseThatNotExists() {
-        List<LunchCommand.MainCoursePair> availableMainCourses =
-                List.of(LunchCommand.MainCoursePair.of("0", mainCourseEntity),
-                        LunchCommand.MainCoursePair.of("1", mainCourseEntity));
+        List<AbstractCommand.IndexedDishes<MainCourseEntity>> availableMainCourses =
+                List.of(AbstractCommand.IndexedDishes.of(Tuple.of("0", mainCourseEntity)));
 
-
-        InvocationTargetException thrown = Assertions
-                .assertThrows(InvocationTargetException.class, () -> {
-                    getGetMainCourseMethod().invoke(lunchCommand, availableMainCourses, "2");
+        IllegalArgumentException thrown = Assertions
+                .assertThrows(IllegalArgumentException.class, () -> {
+                    ReflectionTestUtils.invokeMethod(lunchCommand, "getChosen", availableMainCourses, "1");
                 });
-
-        assertThat(thrown.getCause()).isInstanceOf(IllegalArgumentException.class);
-        assertThat(thrown.getCause().getMessage()).isEqualTo("There is no main course of that index!");
+        assertThat(thrown.getMessage()).isEqualTo("There is no element of that index!");
     }
 
     @Test
     @DisplayName("Should throw exception when user choose dessert that not exists")
     void shouldThrowExceptionWhenUserChooseDessertThatNotExists() {
-        List<LunchCommand.DessertPair> availableDesserts =
-                List.of(LunchCommand.DessertPair.of("0", dessertEntity),
-                        LunchCommand.DessertPair.of("1", dessertEntity));
+        List<AbstractCommand.IndexedDishes<DessertEntity>> availableDesserts =
+                List.of(AbstractCommand.IndexedDishes.of(Tuple.of("0", dessertEntity)));
 
-        InvocationTargetException thrown = Assertions
-                .assertThrows(InvocationTargetException.class, () -> {
-                    getGetDessertMethod().invoke(lunchCommand, availableDesserts, "2");
+        IllegalArgumentException thrown = Assertions
+                .assertThrows(IllegalArgumentException.class, () -> {
+                    ReflectionTestUtils.invokeMethod(lunchCommand, "getChosen", availableDesserts, "1");
                 });
-
-        assertThat(thrown.getCause()).isInstanceOf(IllegalArgumentException.class);
-        assertThat(thrown.getCause().getMessage()).isEqualTo("There is no dessert of that index!");
-    }
-
-    private Method getGetMainCourseMethod() throws NoSuchMethodException {
-        Method method = LunchCommand.class.getDeclaredMethod("getMainCourse", List.class, String.class);
-        method.setAccessible(true);
-        return method;
-    }
-
-    private Method getGetDessertMethod() throws NoSuchMethodException {
-        Method method = LunchCommand.class.getDeclaredMethod("getDessert", List.class, String.class);
-        method.setAccessible(true);
-        return method;
+        assertThat(thrown.getMessage()).isEqualTo("There is no element of that index!");
     }
 }
