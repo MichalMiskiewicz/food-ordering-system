@@ -3,7 +3,7 @@ package com.miskiewicz.michal.foodorderingsystem.services.orderinterpreter.comma
 import com.miskiewicz.michal.foodorderingsystem.entities.CuisineEntity;
 import com.miskiewicz.michal.foodorderingsystem.entities.DessertEntity;
 import com.miskiewicz.michal.foodorderingsystem.entities.MainCourseEntity;
-import com.miskiewicz.michal.foodorderingsystem.inout.InputOutput;
+import com.miskiewicz.michal.foodorderingsystem.inout.IOWriter;
 import com.miskiewicz.michal.foodorderingsystem.repositories.CuisineRepository;
 import com.miskiewicz.michal.foodorderingsystem.repositories.DessertRepository;
 import com.miskiewicz.michal.foodorderingsystem.repositories.MainCourseRepository;
@@ -32,7 +32,7 @@ class LunchCommandTest {
     private final MainCourseRepository mainCourseRepository = mock(MainCourseRepository.class);
     private final DessertRepository dessertRepository = mock(DessertRepository.class);
     private final CuisineRepository cuisineRepository = mock(CuisineRepository.class);
-    private final InputOutput io = mock(InputOutput.class);
+    private final IOWriter io = mock(IOWriter.class);
     private final LunchCommand lunchCommand = new LunchCommand(io, mainCourseRepository, dessertRepository, cuisineRepository, modelMapper);
     private CuisineEntity cuisineEntity;
     private OrderingRequest orderingRequest;

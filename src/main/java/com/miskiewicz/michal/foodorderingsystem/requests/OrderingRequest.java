@@ -14,4 +14,5 @@ public class OrderingRequest {
     public void addToFinalCost(HavingPriceProduct... products) {
         Arrays.stream(products).map(HavingPriceProduct::getPrice).forEach(it -> cost = cost.add(it));
     }
+
 }

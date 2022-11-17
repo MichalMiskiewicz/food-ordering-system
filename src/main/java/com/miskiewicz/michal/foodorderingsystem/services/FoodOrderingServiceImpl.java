@@ -1,7 +1,7 @@
 package com.miskiewicz.michal.foodorderingsystem.services;
 
-import com.miskiewicz.michal.foodorderingsystem.inout.InputOutput;
 import com.miskiewicz.michal.foodorderingsystem.entities.OrderEntity;
+import com.miskiewicz.michal.foodorderingsystem.inout.IOWriter;
 import com.miskiewicz.michal.foodorderingsystem.repositories.OrderRepository;
 import com.miskiewicz.michal.foodorderingsystem.requests.OrderingRequest;
 import com.miskiewicz.michal.foodorderingsystem.services.orderinterpreter.ChooseInterpreter;
@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static java.util.Objects.isNull;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -20,7 +22,11 @@ public class FoodOrderingServiceImpl implements FoodOrderingService {
     private final ChooseInterpreter chooseInterpreter;
     private final OrderRepository orderRepository;
     private final ModelMapper mapper;
-    private final InputOutput io;
+    private final IOWriter io;
+
+    private static boolean isNotEmpty(OrderingRequest orderingRequest) {
+        return orderingRequest.getDrink() != null || orderingRequest.getLunch() != null;
+    }
 
     @Override
     public void placeOrder() {
@@ -42,8 +48,22 @@ public class FoodOrderingServiceImpl implements FoodOrderingService {
     }
 
     private void saveOrder(OrderingRequest orderingRequest) {
+        if (isEmpty(orderingRequest)) {
+            log.info("Ordering request has not been saved");
+            return;
+        }
         OrderEntity completedOrder = mapper.map(orderingRequest, OrderEntity.class);
         orderRepository.save(completedOrder);
+        showSummary(completedOrder);
+    }
+
+    private boolean isEmpty(OrderingRequest orderingRequest) {
+        return isNull(orderingRequest.getDrink()) || isNull(orderingRequest.getLunch());
+    }
+
+    private void showSummary(OrderEntity completedOrder) {
+        io.write("Your order is collected!");
+        io.write(completedOrder.toString());
     }
 
     @Override

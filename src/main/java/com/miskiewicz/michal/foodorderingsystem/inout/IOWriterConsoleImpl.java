@@ -7,7 +7,7 @@ import java.util.Scanner;
 
 @Component
 @RequiredArgsConstructor
-public class InputOutputImpl implements InputOutput {
+public class IOWriterConsoleImpl implements IOWriter {
 
     private final Scanner scanner;
 

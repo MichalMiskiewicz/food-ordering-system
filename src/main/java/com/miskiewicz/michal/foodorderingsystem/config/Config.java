@@ -1,7 +1,7 @@
 package com.miskiewicz.michal.foodorderingsystem.config;
 
-import com.miskiewicz.michal.foodorderingsystem.inout.InputOutput;
-import com.miskiewicz.michal.foodorderingsystem.inout.InputOutputImpl;
+import com.miskiewicz.michal.foodorderingsystem.inout.IOWriter;
+import com.miskiewicz.michal.foodorderingsystem.inout.IOWriterConsoleImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -18,7 +18,7 @@ public class Config {
 
     @Bean
     @Primary
-    InputOutput inputOutput() {
-        return new InputOutputImpl(createScanner());
+    IOWriter ioWriter() {
+        return new IOWriterConsoleImpl(createScanner());
     }
 }

@@ -1,90 +1,53 @@
 package com.miskiewicz.michal.foodorderingsystem.services.orderinterpreter.command;
 
-import com.miskiewicz.michal.foodorderingsystem.inout.InputOutput;
 import com.miskiewicz.michal.foodorderingsystem.entities.DrinkEntity;
+import com.miskiewicz.michal.foodorderingsystem.inout.IOWriter;
 import com.miskiewicz.michal.foodorderingsystem.repositories.DrinkRepository;
 import com.miskiewicz.michal.foodorderingsystem.requests.Drink;
 import com.miskiewicz.michal.foodorderingsystem.requests.OrderingRequest;
-import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.stream.IntStream;
+import java.util.stream.Collectors;
 
 @Component
-@RequiredArgsConstructor
-public class DrinkCommand implements Command {
+public class DrinkCommand extends AbstractCommand {
     private final DrinkRepository drinkRepository;
     private final ModelMapper mapper;
-    private final InputOutput io;
+
+    public DrinkCommand(IOWriter io, DrinkRepository drinkRepository, ModelMapper mapper) {
+        super(io);
+        this.drinkRepository = drinkRepository;
+        this.mapper = mapper;
+    }
 
     @Override
     public void execute(OrderingRequest orderingRequest) {
-        List<DrinkPair> availableDrinks = getAvailableDrinks();
-        availableDrinks.forEach(drink -> io.write(drink.toString()));
+        List<AbstractCommand.IndexedDishes<DrinkEntity>> availableDrinks = getAvailableDrinks();
+        write(availableDrinks);
         String chosenDrink = io.read();
-        Drink drink = getDrink(availableDrinks, chosenDrink);
+        DrinkEntity drinkEntity = getChosen(availableDrinks, chosenDrink);
+        Drink drink = mapper.map(drinkEntity, Drink.class);
         io.write("What about additions?:");
-        List<AdditionsPair> availableAdditions = getAvailableAdditions();
-        availableAdditions.forEach(addition -> io.write(addition.toString()));
+        List<AbstractCommand.IndexedDishes<Drink.Additions>> availableAdditions = getAvailableAdditions();
+        write(availableAdditions);
         String chosenAdditions = io.read();
-        Drink.Additions addition = getDrinkAdditions(availableAdditions, chosenAdditions);
+        Drink.Additions addition = getChosen(availableAdditions, chosenAdditions);
         drink.setAddition(addition);
         orderingRequest.setDrink(drink);
         orderingRequest.addToFinalCost(drink);
     }
 
-    private Drink getDrink(List<DrinkPair> availableDrinks, String chosenDrinkIndex) {
-        DrinkPair chosenDrink = availableDrinks.stream()
-                .filter(drink -> drink.index().equals(chosenDrinkIndex))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("There is no drink of that index!"));
-        return mapper.map(chosenDrink.drinkEntity(), Drink.class);
-    }
-
-    private Drink.Additions getDrinkAdditions(List<AdditionsPair> availableAdditions, String chosenAdditionIndex) {
-        AdditionsPair chosenAddition = availableAdditions.stream()
-                .filter(additions -> additions.index().equals(chosenAdditionIndex))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("There is no addition of that index!"));
-        return chosenAddition.addition();
-    }
-
-    private List<DrinkPair> getAvailableDrinks() {
-        List<DrinkEntity> drinks = drinkRepository.findAll();
-        return IntStream.range(0, drinks.size())
-                .mapToObj(index -> DrinkPair.of(String.valueOf(index), drinks.get(index)))
-                .toList();
-    }
-
-    private List<AdditionsPair> getAvailableAdditions() {
+    private List<AbstractCommand.IndexedDishes<Drink.Additions>> getAvailableAdditions() {
         Drink.Additions[] additions = Drink.Additions.values();
-        return IntStream.range(0, additions.length)
-                .mapToObj(index -> AdditionsPair.of(String.valueOf(index), additions[index]))
-                .toList();
+        return getIndexedDishes(Arrays.stream(additions).collect(Collectors.toList()));
     }
 
-
-    public record DrinkPair(String index, DrinkEntity drinkEntity) {
-        static DrinkPair of(String index, DrinkEntity name) {
-            return new DrinkPair(index, name);
-        }
-
-        @Override
-        public String toString() {
-            return "(" + index + ") " + drinkEntity.getName() + " " + drinkEntity.getPrice() + " zł";
-        }
+    private List<AbstractCommand.IndexedDishes<DrinkEntity>> getAvailableDrinks() {
+        List<DrinkEntity> drinks = drinkRepository.findAll();
+        return getIndexedDishes(drinks);
     }
 
-    public record AdditionsPair(String index, Drink.Additions addition) {
-        static AdditionsPair of(String index, Drink.Additions addition) {
-            return new AdditionsPair(index, addition);
-        }
-
-        @Override
-        public String toString() {
-            return "(" + index + ") " + addition.toString();
-        }
-    }
 }

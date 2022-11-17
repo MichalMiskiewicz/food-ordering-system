@@ -2,7 +2,6 @@ package com.miskiewicz.michal.foodorderingsystem.entities;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
@@ -12,7 +11,6 @@ import java.math.BigDecimal;
 
 @Getter
 @Setter
-@ToString
 @Entity
 @Table(name = "orders")
 public class OrderEntity extends BaseEntity {
@@ -31,4 +29,23 @@ public class OrderEntity extends BaseEntity {
 
     @ManyToOne
     private DrinkEntity drink;
+
+    @Override
+    public String toString() {
+        return """
+                Main Course: %s
+                Dessert: %s
+                Drink: %s
+                    Ice Cubes: %s
+                    Lemon: %s
+                COST: %s
+                """.formatted(
+                        (mainCourse == null ? "no" : mainCourse.toString()),
+                        (dessert == null ? "no" : dessert.toString()),
+                        (drink == null ? "no" : drink.toString()),
+                        iceCubes,
+                        lemon,
+                        cost
+                );
+    }
 }
