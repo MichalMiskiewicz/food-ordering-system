@@ -24,10 +24,6 @@ public class FoodOrderingServiceImpl implements FoodOrderingService {
     private final ModelMapper mapper;
     private final IOWriter io;
 
-    private static boolean isNotEmpty(OrderingRequest orderingRequest) {
-        return orderingRequest.getDrink() != null || orderingRequest.getLunch() != null;
-    }
-
     @Override
     public void placeOrder() {
         while (io.hasNext()) {
@@ -58,7 +54,7 @@ public class FoodOrderingServiceImpl implements FoodOrderingService {
     }
 
     private boolean isEmpty(OrderingRequest orderingRequest) {
-        return isNull(orderingRequest.getDrink()) || isNull(orderingRequest.getLunch());
+        return isNull(orderingRequest.getDrink()) && isNull(orderingRequest.getLunch());
     }
 
     private void showSummary(OrderEntity completedOrder) {
