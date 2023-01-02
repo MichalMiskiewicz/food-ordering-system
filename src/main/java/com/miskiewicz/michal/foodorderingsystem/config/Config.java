@@ -15,10 +15,4 @@ public class Config {
     public Scanner createScanner() {
         return new Scanner(System.in);
     }
-
-    @Bean
-    @Primary
-    IOWriter ioWriter() {
-        return new IOWriterConsoleImpl(createScanner());
-    }
 }

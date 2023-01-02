@@ -9,8 +9,6 @@ import javax.persistence.MappedSuperclass;
 import java.math.BigDecimal;
 
 @MappedSuperclass
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
 public class BasicOrderEntity extends BaseEntity {
