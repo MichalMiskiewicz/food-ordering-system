@@ -1,0 +1,24 @@
+server:
+  address: 127.0.0.1
+  port: 8080
+  error:
+    include-message: always
+logging.pattern.console:
+logging.file.path: .
+logging.level.org.hibernate.SQL: DEBUG
+spring:
+  datasource:
+    url: jdbc:h2:mem:foodOrderingSystemDb
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    defer-datasource-initialization: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: create-drop
+  main:
+    web-application-type: none
+    banner-mode: 'off'
+    log-startup-info: false
